@@ -1,0 +1,19 @@
+
+
+environment "builtin:c++/clang" {
+    inherit "builtin:c++/gcc";
+    cc = "clang";
+    cxx = "clang++";
+}
+
+environment "builtin:c++/clang/library" {
+    inherit "builtin:c++/gcc/library";
+    cc = "clang";
+    cxx = "clang++";
+}
+
+environment "builtin:c++/clang/executable" {
+    inherit "builtin:c++/gcc/executable";
+    cc = "clang";
+    cxx = "clang++";
+}

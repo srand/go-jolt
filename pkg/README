@@ -1,0 +1,134 @@
+
+Considerations
+---------------
+
+Simple:
+   
+    output - rule - input
+
+    => hash(rule, input)
+
+Delayed input: 
+
+    object, depfile.out - rule - input, depfile.in
+    
+    pre hash(rule, input, depfile.in?) => undefined
+    post hash(rule, input, depfile.out) => well defined
+
+
+Order
+    - lookup(exe:link)
+        - exe:compile:main.cpp
+        - exe:link
+
+Jobs
+
+    exe (generator):
+        attrib:
+            - flags
+            - headers
+            - sources
+            - rules
+        digest:
+            - deps()
+            - file(headers)
+            - file(sources)
+            - string(rules)
+        deps:
+            - lib
+        output:
+            - job(exe:stage(lib))
+            - job(exe:link())
+            - job(exe:arch=armv7:compile(main.cpp))
+
+
+    lib (generator):
+        digest:
+            - deps()
+            - headers
+            - sources
+            - rules
+        output:
+            - job(lib:api)
+            - job(lib:archive)
+
+
+    lib:api:
+        digest:
+            file: api.h
+        collect:
+            api.h
+
+
+    lib:archive:
+        digest:
+            deps()
+        deps:
+            lib:compile:lib.cpp
+        steps:
+            ar *.os
+        collect:
+            lib.a
+
+
+    lib:compile:lib.cpp:
+        digest:
+            lib.cpp
+            depfile()
+        steps:
+            cc lib.cpp
+
+
+    exe:link:
+        digest:
+            deps()
+            file: main.cpp
+        collect:
+            exe
+        deps:
+            lib:archive
+            exe:compile:main.cpp
+    
+
+    exe:compile:main.cpp:
+        digest:
+            file: main.cpp
+            depfile: main.o.d
+        steps:
+            cc main.cpp
+        order_deps:
+            stage(lib:api)
+
+        
+    stage(lib:api):
+        steps:
+            unpack lib:api
+        deps:
+            lib:api
+
+
+
+
+recipe: clang
+    attribute-decl:
+        cc: string
+        cxx: string
+        macros: map
+    parameter-decl:
+        option:debug: parameter
+            required: false
+    attributes:
+        cc: clang
+        cxx: clang++
+        macros:
+            - {{if .Env[Option:Debug]}}DEBUG{{end}}
+    rule-defs:
+        - ext: *.cpp
+          command: {{ .Cc }} 
+    rules:
+
+recipe: jolt
+    inherits:
+        - clang
+    attributes:
+        option:debug: true

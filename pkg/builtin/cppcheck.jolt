@@ -1,0 +1,24 @@
+environment "builtin:c++/cppcheck" {
+    // inherit "builtin:c++/attributes";
+
+    string cppcheck = "cppcheck";
+    list cppcheckflags;
+
+	rule run_cppcheck {
+		command = {
+			"{{.Attributes.cppcheck}} -q {{.Input}} {{.Attributes.cppcheckflags}} -I{{.Attributes.outdir}} {{.Attributes.incpaths.Prefix `-I`}}",
+            "touch {{.Output}}",
+		}
+		ext = {".c", ".cc", ".cpp", ".cxx"}
+		message = "[CPPCHECK] {{.Input}}"
+		depfile = "{{.Output}}.d"
+        outputs = {
+			"{{.Attributes.outdir}}/{{.Input}}.cppchecked",
+        }
+	}
+
+    rule skip_cppchecked : skip {
+        ext = {".cppchecked"}
+    }
+
+}

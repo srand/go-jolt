@@ -1,0 +1,20 @@
+environment "builtin:c++/attributes" {
+	// Flags
+	list asflags;
+	list cflags;
+	list cxxflags;
+	list linkflags;
+	list macros;
+
+	// Paths
+	list incpaths;
+	list libpaths;
+	list libraries;
+
+    // Sources
+    list headers;
+    list sources;
+
+    string binary;
+    string outdir = "build.dir";
+}

@@ -1,0 +1,23 @@
+environment "builtin:c++/clang/tidy" {
+    // inherit "builtin:c++/attributes";
+
+    string clangtidy = "clang-tidy";
+    list clangtidyflags;
+
+	rule run_cppcheck {
+		command = {
+			"{{.Attributes.clangtidy}} {{.Attributes.clangtidyflags}} {{.Input}} -- -I{{.Attributes.outdir}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-M`}}",
+            "touch {{.Output}}",
+		}
+		ext = {".c", ".cc", ".cpp", ".cxx"}
+		message = "[CLANG-TIDY] {{.Input}}"
+		depfile = "{{.Output}}.d"
+        outputs = {
+			"{{.Attributes.outdir}}/{{.Input}}.clang-tidy",
+        }
+	}
+
+    rule skip_clang_tidy : skip {
+        ext = {".clang-tidy"}
+    }
+}

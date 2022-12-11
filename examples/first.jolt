@@ -1,0 +1,35 @@
+workspace "ws" {
+
+  project "library" {
+    inherit "builtin:c++/clang/library";
+    inherit "builtin:c++/clang/tidy";
+    inherit "builtin:c++/cppcheck";
+    inherit "builtin:c++/protobuf";
+
+    headers = {
+      "include/header.h"
+    }
+
+    sources = {
+      "src/tutorial.proto",
+      "src/source.cpp",
+    }
+
+    incpaths = {
+      "include",
+    }
+
+    macros = {
+      "DEBUG",
+      "FOOBAR"
+    }
+
+    binary = "library";
+
+    task "build" {
+      steps {
+        transform headers, sources;
+      }
+    }
+  }
+}

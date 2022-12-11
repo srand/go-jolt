@@ -1,0 +1,18 @@
+environment "builtin:c++/protobuf" {
+    string protoc = "protoc";
+    list protoflags;
+
+    rule protobuf_cpp {
+        command = {
+            "{{.Attributes.protoc}} {{.Attributes.protoflags }}  --proto_path={{.Input.Dir}} {{.Attributes.incpaths.Prefix `-I` }} --dependency_out={{.Attributes.outdir}}/{{.Input.Dir}}/{{.Input.BareName}}.pb.d --cpp_out={{.Attributes.outdir}}/{{.Input.Dir}} {{.Input}}",
+        }
+        depfile = "{{.Attributes.outdir}}/{{.Input.Dir}}/{{.Input.BareName}}.pb.d"
+        ext = {".proto"}
+        message = "[PROTO] {{.Input}}"
+        outputs = {
+			"{{.Attributes.outdir}}/{{.Input.Dir}}/{{.Input.BareName}}.pb.h",
+			"{{.Attributes.outdir}}/{{.Input.Dir}}/{{.Input.BareName}}.pb.cc",
+        }        
+		phony = true
+    }
+}

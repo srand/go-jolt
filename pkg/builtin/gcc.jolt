@@ -1,0 +1,122 @@
+environment "builtin:c++/gcc" {
+    inherit "builtin:c++/attributes";
+
+	// Tools
+	string ar = "ar";
+	string as = "as";
+	string cc = "gcc";
+	string cxx = "g++";
+	string ld = "g++";
+
+    string objlist = "objects.olist";
+
+	rule skip_header : skip {
+		ext = {".h"}
+	}
+
+	rule skip_archive : skip {
+		ext = {".a"}
+	}
+		
+	rule skip_no_ext : skip {
+		ext = {""}
+	}
+
+	rule skip_list : skip {
+		ext = {".olist"}
+	}
+
+	rule compile_asm {
+		command = {
+			"{{.Attributes.as}} -x assembler -c {{.Input}} -o {{.Output}} -MMD -MF {{.Output}}.d -I{{.Attributes.outdir}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-D`}} ",
+		}
+		ext = {".s"}
+		message = "[ASM] {{.Input}}"
+		outputs = {
+			"{{.Attributes.outdir}}/{{.Input}}.o",
+		}	
+		depfile = "{{.Output}}.d"
+	}
+
+	rule compile_asm_cpp {
+		command = {
+			"{{.Attributes.as}} -x assembler-with-cpp -c {{.Input}} -o {{.Output}} -MMD -MF {{.Output}}.d -I{{.Attributes.outdir}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-D`}} ",
+		}
+		ext = {".S"}
+		message = "[ASM] {{.Input}}"
+		outputs = {
+			"{{.Attributes.outdir}}/{{.Input}}.o",
+		}	
+		depfile = "{{.Output}}.d"
+	}
+
+	rule compile_c {
+		command = {
+			"{{.Attributes.cc}} -x c -c {{.Input}} -o {{.Output}} -MMD -MF {{.Output}}.d -I{{.Attributes.outdir}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-D`}} ",
+		}
+		ext = {".c"}
+		message = "[C] {{.Input}}"
+		outputs = {
+			"{{.Attributes.outdir}}/{{.Input}}.o",
+		}	
+		depfile = "{{.Output}}.d"
+	}
+
+	rule compile_cxx {
+		command = {
+			"{{.Attributes.cxx}} -x c++ -c {{.Input}} -o {{.Output}} -MMD -MF {{.Output}}.d -I{{.Attributes.outdir}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-D`}} ",
+		}
+		ext = {".cc", ".cpp", ".cxx"}
+		message = "[C++] {{.Input}}"
+		outputs = {
+			"{{.Attributes.outdir}}/{{.Input}}.o",
+		}	
+		depfile = "{{.Output}}.d"
+	}
+	
+	rule objlist : template {
+		aggregate = true;
+		ext = {".o", ".obj"}
+		mandatory = true;
+		outputs = {
+			"{{.Attributes.outdir}}/{{.Attributes.objlist}}",
+		}
+		template = "{{range .Input}}{{.}}\n{{end}}";
+	}
+
+}
+
+environment "builtin:c++/gcc/library" {
+    inherit "builtin:c++/gcc";
+
+	rule archive {
+		aggregate = true;
+		command = {
+			"{{.Attributes.ar}} cr {{.Output}} @{{.Attributes.outdir}}/{{.Attributes.objlist}}"
+		}
+		ext = {".o", ".obj"}
+		mandatory = true;
+		message = "[AR] {{.Attributes.binary}}"
+		outputs = {
+			"{{.Attributes.outdir}}/lib{{.Attributes.binary}}.a",
+		}
+	}
+}
+
+environment "builtin:c++/gcc/executable" {
+    inherit "builtin:c++/gcc";
+	
+	rule link {
+		aggregate = true;
+		command = {
+			"{{.Attributes.Ld}} -o {{.Output}} @{{.Attributes.outdir}}/{{.Attributes.objlist}} {{.Attributes.Libpaths}} {{.Attributes.Libraries.Prefix -l}}",
+		}
+		ext = {".o", ".obj"}
+		mandatory = true;
+		message = "[LINK] {{.Attributes.binary}}"
+		outputs = {
+			"{{.Attributes.outdir}}/{{.Attributes.binary}}",
+		}
+	}
+}
+
