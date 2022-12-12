@@ -241,3 +241,49 @@ Parameterization is possible using the switch statement. Example:
     }
   }
 
+
+Imports and Exports
+```````````````````
+
+WIP
+
+Imports define a task's dependencies to other task artifacts. 
+
+.. code-block:: c++
+
+  // Dependencies on a task level
+  task "build" {
+    imports {
+      incpaths += {
+        "*.cxx.incpaths",
+      }
+      macros += {
+        "*.cxx.macros"
+      }
+    }
+    
+    artifact "api" {
+      exports incpaths as "cxx.incpaths";
+      exports macros as "cxx.macros";
+    }
+
+    artifact "lib" {
+      exports {"lib"} as "cxx.libpaths";
+      exports {"project"} as "cxx.libraries";
+      collects {
+        "*.a",
+      }
+    }
+  }
+
+  // Dependencies on job level
+  rule compile_c {
+    imports {
+      incpaths += {
+        "cxx.incpaths",
+      }
+      macros += {
+        "cxx.macros",
+      }
+    }
+  }
