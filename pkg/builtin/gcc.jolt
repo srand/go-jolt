@@ -28,7 +28,7 @@ environment "builtin:c++/gcc" {
 
 	rule compile_asm {
 		command = {
-			"{{.Attributes.as}} -x assembler -c {{.Input}} -o {{.Output}} -MMD -MF {{.Output}}.d -I{{.Attributes.outdir}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-D`}} ",
+			"{{.Attributes.as}} -x assembler -c {{.Input}} -o {{.Output}} -MMD -MF {{.Output}}.d -I{{.Attributes.outdir}} {{.Attributes.asflags.Prefix `-I`}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-D`}} ",
 		}
 		ext = {".s"}
 		message = "[ASM] {{.Input}}"
@@ -40,7 +40,7 @@ environment "builtin:c++/gcc" {
 
 	rule compile_asm_cpp {
 		command = {
-			"{{.Attributes.as}} -x assembler-with-cpp -c {{.Input}} -o {{.Output}} -MMD -MF {{.Output}}.d -I{{.Attributes.outdir}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-D`}} ",
+			"{{.Attributes.as}} -x assembler-with-cpp -c {{.Input}} -o {{.Output}} -MMD -MF {{.Output}}.d -I{{.Attributes.outdir}} {{.Attributes.asflags.Prefix `-I`}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-D`}} ",
 		}
 		ext = {".S"}
 		message = "[ASM] {{.Input}}"
@@ -52,7 +52,7 @@ environment "builtin:c++/gcc" {
 
 	rule compile_c {
 		command = {
-			"{{.Attributes.cc}} -x c -c {{.Input}} -o {{.Output}} -MMD -MF {{.Output}}.d -I{{.Attributes.outdir}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-D`}} ",
+			"{{.Attributes.cc}} -x c -c {{.Input}} -o {{.Output}} -MMD -MF {{.Output}}.d -I{{.Attributes.outdir}}  {{.Attributes.cflags.Prefix `-I`}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-D`}} ",
 		}
 		ext = {".c"}
 		message = "[C] {{.Input}}"
@@ -64,7 +64,7 @@ environment "builtin:c++/gcc" {
 
 	rule compile_cxx {
 		command = {
-			"{{.Attributes.cxx}} -x c++ -c {{.Input}} -o {{.Output}} -MMD -MF {{.Output}}.d -I{{.Attributes.outdir}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-D`}} ",
+			"{{.Attributes.cxx}} -x c++ -c {{.Input}} -o {{.Output}} -MMD -MF {{.Output}}.d -I{{.Attributes.outdir}} {{.Attributes.cxxflags.Prefix `-I`}} {{.Attributes.incpaths.Prefix `-I`}} {{.Attributes.macros.Prefix `-D`}} ",
 		}
 		ext = {".cc", ".cpp", ".cxx"}
 		message = "[C++] {{.Input}}"
@@ -109,7 +109,7 @@ environment "builtin:c++/gcc/executable" {
 	rule link {
 		aggregate = true;
 		command = {
-			"{{.Attributes.Ld}} -o {{.Output}} @{{.Attributes.outdir}}/{{.Attributes.objlist}} {{.Attributes.Libpaths}} {{.Attributes.Libraries.Prefix -l}}",
+			"{{.Attributes.ld}} -o {{.Output}} @{{.Attributes.outdir}}/{{.Attributes.objlist}} {{.Attributes.linkflags}}  {{.Attributes.libpaths}} {{.Attributes.libraries.Prefix `-l`}}",
 		}
 		ext = {".o", ".obj"}
 		mandatory = true;

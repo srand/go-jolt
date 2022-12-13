@@ -15,6 +15,6 @@ environment "builtin:c++/attributes" {
     list headers;
     list sources;
 
-    string binary;
+    string binary = "binary";
     string outdir = "build.dir";
 }
