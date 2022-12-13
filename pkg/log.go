@@ -19,6 +19,7 @@ const (
 )
 
 func init() {
+	log.SetFlags(0)
 }
 
 type logger struct {
