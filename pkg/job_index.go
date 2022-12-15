@@ -79,7 +79,7 @@ func (i *JobIndex) Remove(job Job) {
 func (i *JobIndex) IsEmpty() bool {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
-	return len(i.RefToJob) == 0
+	return len(i.RefToJob) == 0 && len(i.ready) == 0
 }
 
 func (i *JobIndex) Ready() []Job {

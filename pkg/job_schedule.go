@@ -1,7 +1,11 @@
 package jolt
 
 import (
+	"context"
 	"log"
+	"runtime"
+
+	"golang.org/x/sync/semaphore"
 )
 
 type JobSchedule interface {
@@ -23,32 +27,44 @@ func NewJobSchedule(index *JobIndex) JobSchedule {
 }
 
 func (s *readyJobSchedule) Dispatch() {
-	for {
+	readyChan := make(chan bool, runtime.NumCPU())
+	sem := semaphore.NewWeighted(int64(runtime.NumCPU()))
+
+	execute := func(job Job) {
+		ctx := context.TODO()
+
+		if err := sem.Acquire(ctx, 1); err != nil {
+			panic(err)
+		}
+		defer sem.Release(1)
+
+		cache_proxy_job := &CachedProxyJob{job: job}
+
+		jobs, err := cache_proxy_job.Execute()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, newjob := range jobs {
+			s.Index.Add(newjob)
+		}
+
+		s.Index.Remove(job)
+		readyChan <- true
+	}
+
+	for !s.Index.IsEmpty() {
 		// s.Index.Dump()
 
 		jobs := s.Index.Ready()
-		if len(jobs) == 0 {
-			s.done <- true
-			return
-		}
-
 		for _, job := range jobs {
-			cache_proxy_job := &CachedProxyJob{job: job}
-
-			jobs, err := cache_proxy_job.Execute()
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			for _, newjob := range jobs {
-				s.Index.Add(newjob)
-			}
-
-			s.Index.Remove(job)
-
-			// s.Index.Dump()
+			go execute(job)
 		}
+
+		<-readyChan
 	}
+
+	s.done <- true
 }
 
 func (s *readyJobSchedule) Done() chan bool {
